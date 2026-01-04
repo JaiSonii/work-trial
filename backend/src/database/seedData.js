@@ -1,7 +1,7 @@
 const { db } = require('./connection');
 const { initializeDatabase } = require('./schema');
 
-// Demo customers data
+// Demo customers data - 10 customers
 const demoCustomers = [
   {
     id: 'CUST001',
@@ -50,170 +50,272 @@ const demoCustomers = [
     primary_contact_title: 'Account Manager',
     primary_contact_phone: '555-0404',
     primary_contact_email: 'emily.rodriguez@globalfreight.com'
+  },
+  {
+    id: 'CUST005',
+    company_name: 'AutoParts Express',
+    legal_name: 'AutoParts Express LLC',
+    mc_number: 'MC-567890',
+    dot_number: 'DOT-123456',
+    taxid: '56-7890123',
+    primary_contact_name: 'David Williams',
+    primary_contact_title: 'Fleet Manager',
+    primary_contact_phone: '555-0505',
+    primary_contact_email: 'david.williams@autoparts.com'
+  },
+  {
+    id: 'CUST006',
+    company_name: 'ChemTrans Logistics',
+    legal_name: 'ChemTrans Logistics Corporation',
+    mc_number: 'MC-678901',
+    dot_number: 'DOT-234567',
+    taxid: '67-8901234',
+    primary_contact_name: 'Lisa Anderson',
+    primary_contact_title: 'Safety Director',
+    primary_contact_phone: '555-0606',
+    primary_contact_email: 'lisa.anderson@chemtrans.com'
+  },
+  {
+    id: 'CUST007',
+    company_name: 'Retail Distribution Co.',
+    legal_name: 'Retail Distribution Company Inc.',
+    mc_number: 'MC-789012',
+    dot_number: 'DOT-345678',
+    taxid: '78-9012345',
+    primary_contact_name: 'Robert Taylor',
+    primary_contact_title: 'Distribution Manager',
+    primary_contact_phone: '555-0707',
+    primary_contact_email: 'robert.taylor@retaildist.com'
+  },
+  {
+    id: 'CUST008',
+    company_name: 'Agricultural Transport',
+    legal_name: 'Agricultural Transport Services LLC',
+    mc_number: 'MC-890123',
+    dot_number: 'DOT-456789',
+    taxid: '89-0123456',
+    primary_contact_name: 'Jennifer Martinez',
+    primary_contact_title: 'Operations Coordinator',
+    primary_contact_phone: '555-0808',
+    primary_contact_email: 'jennifer.martinez@agtransport.com'
+  },
+  {
+    id: 'CUST009',
+    company_name: 'Furniture Movers Pro',
+    legal_name: 'Furniture Movers Professional Inc.',
+    mc_number: 'MC-901234',
+    dot_number: 'DOT-567890',
+    taxid: '90-1234567',
+    primary_contact_name: 'James Brown',
+    primary_contact_title: 'Customer Service Manager',
+    primary_contact_phone: '555-0909',
+    primary_contact_email: 'james.brown@furnituremovers.com'
+  },
+  {
+    id: 'CUST010',
+    company_name: 'Energy Solutions Transport',
+    legal_name: 'Energy Solutions Transport LLC',
+    mc_number: 'MC-012345',
+    dot_number: 'DOT-678901',
+    taxid: '01-2345678',
+    primary_contact_name: 'Patricia Davis',
+    primary_contact_title: 'Logistics Director',
+    primary_contact_phone: '555-1010',
+    primary_contact_email: 'patricia.davis@energytransport.com'
   }
 ];
 
-// Demo loads data
-const demoLoads = [
-  {
-    id: '1',
-    orderId: 'ORD-0001',
-    stops: [
-      {
-        type: 'pickup',
-        locationName: 'TechLogistics Warehouse',
-        address: '123 Main St',
-        city: 'Los Angeles',
-        state: 'CA',
-        zipCode: '90001',
-        earlyArrival: '2024-01-15T07:00:00Z',
-        lateArrival: '2024-01-15T09:00:00Z'
-      },
-      {
-        type: 'delivery',
-        locationName: 'SF Distribution Center',
-        address: '456 Oak Ave',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94102',
-        earlyArrival: '2024-01-15T13:00:00Z',
-        lateArrival: '2024-01-15T15:00:00Z'
-      }
-    ],
-    weight: 15000,
-    trailerType: 'Dry Van',
-    miles: 380,
-    commodity: 'Electronics',
-    rate: 2850.00,
-    customer_id: 'CUST001'
-  },
-  {
-    id: '2',
-    orderId: 'ORD-0002',
-    stops: [
-      {
-        type: 'pickup',
-        locationName: 'Dallas Food Terminal',
-        address: '789 Commerce Blvd',
-        city: 'Dallas',
-        state: 'TX',
-        zipCode: '75201',
-        earlyArrival: '2024-01-16T08:00:00Z',
-        lateArrival: '2024-01-16T10:00:00Z'
-      },
-      {
-        type: 'intermediate',
-        locationName: 'Houston Cold Storage',
-        address: '321 Industrial Way',
-        city: 'Houston',
-        state: 'TX',
-        zipCode: '77001',
-        earlyArrival: '2024-01-16T14:00:00Z',
-        lateArrival: '2024-01-16T16:00:00Z'
-      },
-      {
-        type: 'delivery',
-        locationName: 'Austin Retail Hub',
-        address: '654 Market St',
-        city: 'Austin',
-        state: 'TX',
-        zipCode: '78701',
-        earlyArrival: '2024-01-17T09:00:00Z',
-        lateArrival: '2024-01-17T11:00:00Z'
-      }
-    ],
-    weight: 22000,
-    trailerType: 'Refrigerated',
-    miles: 450,
-    commodity: 'Food Products',
-    rate: 3600.00,
-    customer_id: 'CUST002'
-  },
-  {
-    id: '3',
-    orderId: 'ORD-0003',
-    stops: [
-      {
-        type: 'pickup',
-        locationName: 'Chicago Materials Yard',
-        address: '987 Warehouse Rd',
-        city: 'Chicago',
-        state: 'IL',
-        zipCode: '60601',
-        earlyArrival: '2024-01-18T06:00:00Z',
-        lateArrival: '2024-01-18T08:00:00Z'
-      },
-      {
-        type: 'delivery',
-        locationName: 'Detroit Construction Site',
-        address: '147 Distribution Center',
-        city: 'Detroit',
-        state: 'MI',
-        zipCode: '48201',
-        earlyArrival: '2024-01-18T15:00:00Z',
-        lateArrival: '2024-01-18T17:00:00Z'
-      }
-    ],
-    weight: 18000,
-    trailerType: 'Flatbed',
-    miles: 280,
-    commodity: 'Construction Materials',
-    rate: 2240.00,
-    customer_id: 'CUST003'
-  },
-  {
-    id: '4',
-    orderId: 'ORD-0004',
-    stops: [
-      {
-        type: 'pickup',
-        locationName: 'Phoenix Logistics Hub',
-        address: '258 Logistics Park',
-        city: 'Phoenix',
-        state: 'AZ',
-        zipCode: '85001',
-        earlyArrival: '2024-01-19T07:00:00Z',
-        lateArrival: '2024-01-19T09:00:00Z'
-      },
-      {
-        type: 'intermediate',
-        locationName: 'Las Vegas Transit Point',
-        address: '369 Transit Hub',
-        city: 'Las Vegas',
-        state: 'NV',
-        zipCode: '89101',
-        earlyArrival: '2024-01-19T12:00:00Z',
-        lateArrival: '2024-01-19T14:00:00Z'
-      },
-      {
-        type: 'intermediate',
-        locationName: 'Salt Lake City Terminal',
-        address: '741 Freight Terminal',
-        city: 'Salt Lake City',
-        state: 'UT',
-        zipCode: '84101',
-        earlyArrival: '2024-01-20T08:00:00Z',
-        lateArrival: '2024-01-20T10:00:00Z'
-      },
-      {
-        type: 'delivery',
-        locationName: 'Denver Distribution Center',
-        address: '852 Shipping Center',
-        city: 'Denver',
-        state: 'CO',
-        zipCode: '80201',
-        earlyArrival: '2024-01-20T16:00:00Z',
-        lateArrival: '2024-01-20T18:00:00Z'
-      }
-    ],
-    weight: 25000,
-    trailerType: 'Dry Van',
-    miles: 750,
-    commodity: 'General Freight',
-    rate: 5625.00,
-    customer_id: 'CUST001'
-  }
+// Helper function to generate random date within a range
+const randomDate = (start, end) => {
+  const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  return date;
+};
+
+// Helper function to generate arrival dates
+const generateArrivalDates = (baseDate, hoursOffset) => {
+  const earlyDate = new Date(baseDate);
+  earlyDate.setHours(earlyDate.getHours() + hoursOffset);
+  const lateDate = new Date(earlyDate);
+  lateDate.setHours(lateDate.getHours() + 2);
+  return {
+    early: earlyDate.toISOString(),
+    late: lateDate.toISOString()
+  };
+};
+
+// Cities and states for generating routes
+const cities = [
+  { city: 'Los Angeles', state: 'CA' },
+  { city: 'San Francisco', state: 'CA' },
+  { city: 'San Diego', state: 'CA' },
+  { city: 'Sacramento', state: 'CA' },
+  { city: 'Dallas', state: 'TX' },
+  { city: 'Houston', state: 'TX' },
+  { city: 'Austin', state: 'TX' },
+  { city: 'San Antonio', state: 'TX' },
+  { city: 'Chicago', state: 'IL' },
+  { city: 'Detroit', state: 'MI' },
+  { city: 'Phoenix', state: 'AZ' },
+  { city: 'Las Vegas', state: 'NV' },
+  { city: 'Denver', state: 'CO' },
+  { city: 'Salt Lake City', state: 'UT' },
+  { city: 'Seattle', state: 'WA' },
+  { city: 'Portland', state: 'OR' },
+  { city: 'Miami', state: 'FL' },
+  { city: 'Atlanta', state: 'GA' },
+  { city: 'New York', state: 'NY' },
+  { city: 'Boston', state: 'MA' },
+  { city: 'Philadelphia', state: 'PA' },
+  { city: 'Baltimore', state: 'MD' },
+  { city: 'Charlotte', state: 'NC' },
+  { city: 'Nashville', state: 'TN' },
+  { city: 'Memphis', state: 'TN' },
+  { city: 'Kansas City', state: 'MO' },
+  { city: 'Minneapolis', state: 'MN' },
+  { city: 'Milwaukee', state: 'WI' },
+  { city: 'Indianapolis', state: 'IN' },
+  { city: 'Columbus', state: 'OH' }
 ];
+
+const trailerTypes = [
+  'Dry Van',
+  'Refrigerated',
+  'Flatbed',
+  'Step Deck',
+  'Double Drop',
+  'Lowboy',
+  'Hotshot',
+  'Box Truck',
+  'Conestoga',
+  'Auto Carrier',
+  'Tanker',
+  'Intermodal'
+];
+
+const commodities = [
+  'Electronics',
+  'Food Products',
+  'Construction Materials',
+  'General Freight',
+  'Automotive Parts',
+  'Furniture',
+  'Chemicals',
+  'Retail Goods',
+  'Agricultural Products',
+  'Energy Equipment',
+  'Medical Supplies',
+  'Textiles',
+  'Machinery',
+  'Paper Products',
+  'Plastics'
+];
+
+// Generate 100 loads - 10 per customer
+const generateLoads = () => {
+  const loads = [];
+  const baseDate = new Date('2024-01-15');
+  let orderCounter = 1;
+  let loadIdCounter = 1;
+
+  // Generate 10 loads for each customer
+  for (let customerIndex = 0; customerIndex < 10; customerIndex++) {
+    const customerId = `CUST${String(customerIndex + 1).padStart(3, '0')}`;
+    
+    for (let loadIndex = 0; loadIndex < 10; loadIndex++) {
+      // Random route selection
+      const originIndex = Math.floor(Math.random() * cities.length);
+      let destIndex = Math.floor(Math.random() * cities.length);
+      // Ensure destination is different from origin
+      while (destIndex === originIndex) {
+        destIndex = Math.floor(Math.random() * cities.length);
+      }
+      
+      const origin = cities[originIndex];
+      const destination = cities[destIndex];
+      
+      // Calculate approximate miles (rough estimate)
+      const miles = Math.floor(300 + Math.random() * 2000);
+      
+      // Determine number of stops (2, 3, 4, or 5+)
+      let numStops = 2;
+      const stopChance = Math.random();
+      if (stopChance < 0.5) numStops = 2;
+      else if (stopChance < 0.75) numStops = 3;
+      else if (stopChance < 0.9) numStops = 4;
+      else numStops = 5;
+      
+      // Generate stops
+      const stops = [];
+      const loadDate = new Date(baseDate);
+      loadDate.setDate(loadDate.getDate() + (customerIndex * 10) + loadIndex);
+      
+      // Pickup stop
+      const pickupDates = generateArrivalDates(loadDate, 7);
+      stops.push({
+        type: 'pickup',
+        locationName: `${origin.city} Warehouse`,
+        address: `${Math.floor(Math.random() * 9999) + 1} Industrial Blvd`,
+        city: origin.city,
+        state: origin.state,
+        zipCode: String(Math.floor(Math.random() * 90000) + 10000),
+        earlyArrival: pickupDates.early,
+        lateArrival: pickupDates.late
+      });
+      
+      // Intermediate stops (if any)
+      for (let i = 0; i < numStops - 2; i++) {
+        const intermediateCity = cities[Math.floor(Math.random() * cities.length)];
+        const intermediateDates = generateArrivalDates(loadDate, 12 + (i * 6));
+        stops.push({
+          type: 'intermediate',
+          locationName: `${intermediateCity.city} Transit Point`,
+          address: `${Math.floor(Math.random() * 9999) + 1} Distribution Way`,
+          city: intermediateCity.city,
+          state: intermediateCity.state,
+          zipCode: String(Math.floor(Math.random() * 90000) + 10000),
+          earlyArrival: intermediateDates.early,
+          lateArrival: intermediateDates.late
+        });
+      }
+      
+      // Delivery stop
+      const deliveryDates = generateArrivalDates(loadDate, 12 + ((numStops - 2) * 6));
+      stops.push({
+        type: 'delivery',
+        locationName: `${destination.city} Distribution Center`,
+        address: `${Math.floor(Math.random() * 9999) + 1} Shipping Ave`,
+        city: destination.city,
+        state: destination.state,
+        zipCode: String(Math.floor(Math.random() * 90000) + 10000),
+        earlyArrival: deliveryDates.early,
+        lateArrival: deliveryDates.late
+      });
+      
+      // Generate load details
+      const trailerType = trailerTypes[Math.floor(Math.random() * trailerTypes.length)];
+      const commodity = commodities[Math.floor(Math.random() * commodities.length)];
+      const weight = Math.floor(10000 + Math.random() * 30000); // 10,000 to 40,000 lbs
+      const ratePerMile = 1.5 + Math.random() * 2.5; // $1.50 to $4.00 per mile
+      const rate = Math.floor(miles * ratePerMile);
+      
+      loads.push({
+        id: String(loadIdCounter++),
+        orderId: `ORD-${String(orderCounter++).padStart(4, '0')}`,
+        stops,
+        weight,
+        trailerType,
+        miles,
+        commodity,
+        rate,
+        customer_id: customerId
+      });
+    }
+  }
+  
+  return loads;
+};
+
+const demoLoads = generateLoads();
 
 // Seed customers
 const seedCustomers = async () => {
@@ -291,4 +393,3 @@ module.exports = {
   demoCustomers,
   demoLoads
 };
-

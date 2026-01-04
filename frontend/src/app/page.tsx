@@ -31,6 +31,7 @@ interface Load {
 
 export default function Home() {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleLoadSelect = (load: Load) => {
     setSelectedLoad(load);
@@ -40,22 +41,48 @@ export default function Home() {
     setSelectedLoad(null);
   };
 
+  const handleLoadUpdated = () => {
+    setRefreshKey(prev => prev + 1);
+    // Refresh the selected load
+    if (selectedLoad) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/loads/${selectedLoad.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setSelectedLoad(data.data);
+          }
+        });
+    }
+  };
+
+  const handleLoadDeleted = () => {
+    setSelectedLoad(null);
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      {/* Main Content Area */}
-      <div className={`flex-1 transition-all duration-300 ${selectedLoad ? 'mr-1/3' : ''}`}>
+      {/* Main Content Area - Left Panel */}
+      <div className={`flex-1 transition-all duration-300 overflow-y-auto ${selectedLoad ? 'w-1/2' : 'w-full'}`}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Loads</h1>
           <Loads 
+            key={refreshKey}
             onLoadSelect={handleLoadSelect} 
             selectedLoadId={selectedLoad?.id}
+            onLoadDeleted={handleLoadDeleted}
           />
         </div>
       </div>
 
-      {/* Load Details Side Panel */}
+      {/* Load Details Side Panel - Right Panel */}
       {selectedLoad && (
-        <LoadDetails load={selectedLoad} onClose={handleCloseDetails} />
+        <div className="w-1/2 border-l border-gray-200 overflow-y-auto">
+          <LoadDetails 
+            load={selectedLoad} 
+            onClose={handleCloseDetails}
+            onLoadUpdated={handleLoadUpdated}
+          />
+        </div>
       )}
     </div>
   );
