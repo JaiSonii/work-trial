@@ -25,6 +25,7 @@ interface Load {
   commodity: string;
   rate?: number;
   quote_price?: number;
+  notes?: string;
   customer_id: string;
   company_name?: string;
 }

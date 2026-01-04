@@ -33,6 +33,7 @@ const initializeDatabase = async () => {
       commodity TEXT NOT NULL,
       rate REAL NOT NULL,
       quote_price REAL,
+      notes TEXT,
       customer_id TEXT NOT NULL,
       FOREIGN KEY (customer_id) REFERENCES customers(id)
     )

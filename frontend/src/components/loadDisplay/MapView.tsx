@@ -183,14 +183,60 @@ export default function MapView({ stops, onClose }: MapViewProps) {
         }
       }
 
-      // Draw route line if we have multiple points
+      // Draw route line from origin to destination with waypoints
       let routeLine: any = null;
       if (bounds.length > 1) {
-        routeLine = L.polyline(bounds, {
-          color: '#3b82f6',
-          weight: 3,
-          opacity: 0.7
+        // Create route coordinates: origin -> intermediate stops -> destination
+        const routeCoordinates: any[] = [];
+        
+        // Add origin (first stop)
+        if (bounds[0]) routeCoordinates.push(bounds[0]);
+        
+        // Add intermediate stops (if any)
+        for (let i = 1; i < bounds.length - 1; i++) {
+          routeCoordinates.push(bounds[i]);
+        }
+        
+        // Add destination (last stop)
+        if (bounds.length > 1) {
+          routeCoordinates.push(bounds[bounds.length - 1]);
+        }
+        
+        // Draw the route polyline with a more visible style
+        routeLine = L.polyline(routeCoordinates, {
+          color: '#2563eb',
+          weight: 5,
+          opacity: 0.9,
+          smoothFactor: 1
         }).addTo(map);
+        
+        // Add a shadow/outline for better visibility
+        L.polyline(routeCoordinates, {
+          color: '#1e40af',
+          weight: 7,
+          opacity: 0.3,
+          smoothFactor: 1
+        }).addTo(map).bringToBack();
+        
+        // Add direction arrows along the route
+        const arrowIcon = L.divIcon({
+          className: 'route-arrow',
+          html: '<div style="font-size: 24px; color: #2563eb; font-weight: bold; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">→</div>',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+        
+        // Add direction arrows at intervals along the route
+        if (routeCoordinates.length > 1) {
+          const numArrows = Math.min(3, routeCoordinates.length - 1);
+          for (let i = 1; i <= numArrows; i++) {
+            const arrowIndex = Math.floor((routeCoordinates.length - 1) * (i / (numArrows + 1)));
+            if (arrowIndex > 0 && arrowIndex < routeCoordinates.length) {
+              const arrowPoint = routeCoordinates[arrowIndex];
+              L.marker(arrowPoint, { icon: arrowIcon, interactive: false, zIndexOffset: 1000 }).addTo(map);
+            }
+          }
+        }
       }
 
       // Fit map to show all markers

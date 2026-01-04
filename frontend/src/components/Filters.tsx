@@ -197,7 +197,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 <select
                   value={filters.equipmentType}
                   onChange={(e) => handleFilterChange('equipmentType', e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-black"
                 >
                   {EQUIPMENT_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -215,7 +215,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 <select
                   value={filters.stops}
                   onChange={(e) => handleFilterChange('stops', e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-black"
                 >
                   {STOPS_OPTIONS.map((option) => (
                     <option key={option} value={option}>

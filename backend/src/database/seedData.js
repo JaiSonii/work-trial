@@ -354,8 +354,8 @@ const seedCustomers = async () => {
 // Seed loads
 const seedLoads = async () => {
   const insert = db.prepare(`
-    INSERT INTO loads (id, orderId, stops, weight, trailerType, miles, commodity, rate, customer_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO loads (id, orderId, stops, weight, trailerType, miles, commodity, rate, notes, customer_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   for (const load of demoLoads) {
@@ -369,6 +369,7 @@ const seedLoads = async () => {
         load.miles,
         load.commodity,
         load.rate,
+        null, // notes - null for seed data
         load.customer_id,
         (err) => {
           if (err) reject(err);

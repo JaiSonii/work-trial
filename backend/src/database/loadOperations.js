@@ -13,6 +13,7 @@ const rowToLoad = (row) => {
     commodity: row.commodity,
     rate: row.rate,
     quote_price: row.quote_price || null,
+    notes: row.notes || null,
     customer_id: row.customer_id,
     company_name: row.company_name || null
   };
@@ -164,8 +165,8 @@ const createLoad = async (load) => {
   const orderId = load.orderId || await getNextOrderId();
   
   await dbRun(
-    `INSERT INTO loads (id, orderId, stops, weight, trailerType, miles, commodity, rate, customer_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO loads (id, orderId, stops, weight, trailerType, miles, commodity, rate, notes, customer_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       orderId,
@@ -175,6 +176,7 @@ const createLoad = async (load) => {
       load.miles,
       load.commodity,
       load.rate || 0,
+      load.notes || null,
       load.customer_id
     ]
   );
@@ -210,6 +212,7 @@ const updateLoad = async (id, updatedLoad) => {
          miles = ?,
          commodity = ?,
          rate = ?,
+         notes = ?,
          customer_id = ?
      WHERE id = ?`,
     [
@@ -219,6 +222,7 @@ const updateLoad = async (id, updatedLoad) => {
       mergedLoad.miles,
       mergedLoad.commodity,
       mergedLoad.rate || existingLoad.rate,
+      mergedLoad.notes || null,
       mergedLoad.customer_id,
       id
     ]

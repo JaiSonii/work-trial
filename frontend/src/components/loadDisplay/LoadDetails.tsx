@@ -28,6 +28,7 @@ interface Load {
   commodity: string;
   rate?: number;
   quote_price?: number;
+  notes?: string;
   customer_id: string;
   company_name?: string;
 }
@@ -256,6 +257,16 @@ export default function LoadDetails({ load, onClose, onLoadUpdated }: LoadDetail
                 </div>
               </div>
             </div>
+
+            {/* Notes Section */}
+            {load.notes && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Notes</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{load.notes}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

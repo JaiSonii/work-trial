@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Input from './ui/Input';
+import Select from './ui/Select';
 
 interface Stop {
   type: string;
@@ -27,6 +29,7 @@ interface Load {
   miles: number;
   commodity: string;
   rate?: number;
+  notes?: string;
   customer_id: string;
   company_name?: string;
 }
@@ -65,7 +68,8 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
     weight: '',
     miles: '',
     rate: '',
-    commodity: ''
+    commodity: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -88,7 +92,8 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
         weight: load.weight.toString(),
         miles: load.miles.toString(),
         rate: load.rate?.toString() || '',
-        commodity: load.commodity
+        commodity: load.commodity,
+        notes: load.notes || ''
       });
     }
   }, [isOpen, load]);
@@ -174,7 +179,8 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
         weight: parseFloat(formData.weight),
         miles: parseFloat(formData.miles),
         rate: parseFloat(formData.rate) || 0,
-        commodity: formData.commodity
+        commodity: formData.commodity,
+        notes: formData.notes || null
       };
 
       const response = await fetch(`${API_URL}/api/loads/${load.id}`, {
@@ -219,43 +225,29 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Customer and Equipment */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Customer *
-              </label>
-              <select
-                required
-                value={formData.customer_id}
-                onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="">Select Customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.company_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Customer *"
+              required
+              value={formData.customer_id}
+              onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+              placeholder="Select Customer"
+              options={customers.map(customer => ({
+                value: customer.id,
+                label: customer.company_name
+              }))}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Equipment Type (Trailer) *
-              </label>
-              <select
-                required
-                value={formData.trailerType}
-                onChange={(e) => setFormData({ ...formData, trailerType: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="">Select Equipment Type</option>
-                {TRAILER_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Equipment Type (Trailer) *"
+              required
+              value={formData.trailerType}
+              onChange={(e) => setFormData({ ...formData, trailerType: e.target.value })}
+              placeholder="Select Equipment Type"
+              options={TRAILER_TYPES.map(type => ({
+                value: type,
+                label: type
+              }))}
+            />
           </div>
 
           {/* Stops */}
@@ -302,113 +294,80 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
 
                   {isIntermediate && (
                     <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Stop Type
-                      </label>
-                      <select
+                      <Select
+                        label="Stop Type"
                         value={stop.type}
                         onChange={(e) => handleStopChange(index, 'type', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      >
-                        <option value="pickup">Pickup</option>
-                        <option value="delivery">Delivery</option>
-                      </select>
+                        placeholder="Select Type"
+                        options={[
+                          { value: 'pickup', label: 'Pickup' },
+                          { value: 'delivery', label: 'Delivery' }
+                        ]}
+                      />
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 gap-4 mb-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Location Name
-                      </label>
-                      <input
-                        type="text"
-                        value={stop.locationName}
-                        onChange={(e) => handleStopChange(index, 'locationName', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        placeholder="Warehouse, Distribution Center, etc."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Address *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={stop.address}
-                        onChange={(e) => handleStopChange(index, 'address', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                    <Input
+                      label="Location Name"
+                      type="text"
+                      value={stop.locationName}
+                      onChange={(e) => handleStopChange(index, 'locationName', e.target.value)}
+                      placeholder="Warehouse, Distribution Center, etc."
+                    />
+                    <Input
+                      label="Address *"
+                      type="text"
+                      required
+                      value={stop.address}
+                      onChange={(e) => handleStopChange(index, 'address', e.target.value)}
+                      placeholder="Street address"
+                    />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        City *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={stop.city}
-                        onChange={(e) => handleStopChange(index, 'city', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        maxLength={2}
-                        value={stop.state}
-                        onChange={(e) => handleStopChange(index, 'state', e.target.value.toUpperCase())}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        placeholder="CA"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ZIP Code *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={stop.zipCode}
-                        onChange={(e) => handleStopChange(index, 'zipCode', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                    <Input
+                      label="City *"
+                      type="text"
+                      required
+                      value={stop.city}
+                      onChange={(e) => handleStopChange(index, 'city', e.target.value)}
+                      placeholder="City name"
+                    />
+                    <Input
+                      label="State *"
+                      type="text"
+                      required
+                      maxLength={2}
+                      value={stop.state}
+                      onChange={(e) => handleStopChange(index, 'state', e.target.value.toUpperCase())}
+                      placeholder="CA"
+                    />
+                    <Input
+                      label="ZIP Code *"
+                      type="text"
+                      required
+                      value={stop.zipCode}
+                      onChange={(e) => handleStopChange(index, 'zipCode', e.target.value)}
+                      placeholder="12345"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Early Arrival *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        required
-                        value={stop.earlyArrival ? new Date(stop.earlyArrival).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => handleStopChange(index, 'earlyArrival', new Date(e.target.value).toISOString())}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Late Arrival *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        required
-                        value={stop.lateArrival ? new Date(stop.lateArrival).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => handleStopChange(index, 'lateArrival', new Date(e.target.value).toISOString())}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                    <Input
+                      label="Early Arrival *"
+                      type="datetime-local"
+                      required
+                      value={stop.earlyArrival ? new Date(stop.earlyArrival).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => handleStopChange(index, 'earlyArrival', new Date(e.target.value).toISOString())}
+                    />
+                    <Input
+                      label="Late Arrival *"
+                      type="datetime-local"
+                      required
+                      value={stop.lateArrival ? new Date(stop.lateArrival).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => handleStopChange(index, 'lateArrival', new Date(e.target.value).toISOString())}
+                    />
                   </div>
                 </div>
                 );
@@ -420,58 +379,54 @@ export default function EditLoad({ isOpen, load, onClose, onLoadUpdated }: EditL
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipment Details</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Weight (lbs) *
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  min="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Miles *
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={formData.miles}
-                  onChange={(e) => setFormData({ ...formData, miles: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  min="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rate ($)
-                </label>
-                <input
-                  type="number"
-                  value={formData.rate}
-                  onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Commodity *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.commodity}
-                  onChange={(e) => setFormData({ ...formData, commodity: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                />
-              </div>
+              <Input
+                label="Weight (lbs) *"
+                type="number"
+                required
+                value={formData.weight}
+                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                placeholder="Enter weight"
+                min="0"
+              />
+              <Input
+                label="Miles *"
+                type="number"
+                required
+                value={formData.miles}
+                onChange={(e) => setFormData({ ...formData, miles: e.target.value })}
+                placeholder="Enter miles"
+                min="0"
+              />
+              <Input
+                label="Rate ($)"
+                type="number"
+                value={formData.rate}
+                onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
+                placeholder="Enter rate"
+                min="0"
+                step="0.01"
+              />
+              <Input
+                label="Commodity *"
+                type="text"
+                required
+                value={formData.commodity}
+                onChange={(e) => setFormData({ ...formData, commodity: e.target.value })}
+                placeholder="Enter commodity type"
+              />
             </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">Notes</h3>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Enter any additional notes or comments about this load..."
+              rows={4}
+              className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
 
           {/* Submit Button */}

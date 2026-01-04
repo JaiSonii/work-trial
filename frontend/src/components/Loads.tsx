@@ -23,6 +23,7 @@ interface Load {
   miles: number;
   commodity: string;
   rate?: number;
+  notes?: string;
   customer_id: string;
   company_name?: string;
 }
