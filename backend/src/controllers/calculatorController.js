@@ -1,4 +1,4 @@
-const { saveQuote, getChargesByLoadId } = require('../database');
+const { saveQuote, getChargesByLoadId } = require('../database/index');
 
 // Calculate and save quote
 const calculateQuoteHandler = async (req, res) => {
@@ -7,7 +7,7 @@ const calculateQuoteHandler = async (req, res) => {
     const { baseCost, miles, accessorialCharges, marginPercentage, subtotal, finalQuote } = req.body;
     
     // Get load to get customer_id
-    const { getLoadById } = require('../database');
+    const { getLoadById } = require('../database/index');
     const load = await getLoadById(id);
     
     if (!load) {

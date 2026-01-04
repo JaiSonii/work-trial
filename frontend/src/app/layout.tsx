@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import CreateLoad from '@/components/CreateLoad';
+import AILoadCreator from '@/components/AILoadCreator';
 import Filters, { FilterState } from '@/components/Filters';
 import localFont from "next/font/local";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isCreateLoadOpen, setIsCreateLoadOpen] = useState(false);
+  const [isAILoadCreatorOpen, setIsAILoadCreatorOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -66,6 +68,13 @@ export default function RootLayout({
                 <div className="flex items-center gap-4">
                   <Filters onFilterChange={handleFilterChange} />
                   <button
+                    onClick={() => setIsAILoadCreatorOpen(true)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-md hover:from-purple-700 hover:to-purple-800 transition-colors flex items-center gap-2"
+                  >
+                    <span>🤖</span>
+                    <span>AI Create Load</span>
+                  </button>
+                  <button
                     onClick={() => setIsCreateLoadOpen(true)}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
                   >
@@ -85,6 +94,13 @@ export default function RootLayout({
           <CreateLoad
             isOpen={isCreateLoadOpen}
             onClose={() => setIsCreateLoadOpen(false)}
+            onLoadCreated={handleLoadCreated}
+          />
+
+          {/* AI Load Creator Modal */}
+          <AILoadCreator
+            isOpen={isAILoadCreatorOpen}
+            onClose={() => setIsAILoadCreatorOpen(false)}
             onLoadCreated={handleLoadCreated}
           />
         </div>

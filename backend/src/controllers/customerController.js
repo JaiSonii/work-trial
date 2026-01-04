@@ -1,4 +1,4 @@
-const { getCustomerById, getAllCustomers } = require('../database');
+const { getCustomerById, getAllCustomers } = require('../database/index');
 
 // Get all customers
 const getAllCustomersHandler = async (req, res) => {

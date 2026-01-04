@@ -7,7 +7,7 @@ const {
   updateLoad,
   deleteLoad,
   getNextId
-} = require('../database');
+} = require('../database/index');
 
 // Get all loads with pagination and filtering
 const getAllLoadsHandler = async (req, res) => {
