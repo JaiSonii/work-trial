@@ -60,9 +60,9 @@ const TRAILER_TYPES = [
 ];
 
 // Mock AI service to parse natural language
-const mockAIParse = async (userInput: string, existingData: ParsedLoadData): Promise<{ message: string; data: ParsedLoadData; isComplete: boolean }> => {
+const mockAIParse = async (userInput: string, existingData: ParsedLoadData): Promise<{ message: string; data: ParsedLoadData; shouldCreate: boolean }> => {
   // Simulate AI processing delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+  await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
 
   const input = userInput.toLowerCase();
   const updatedData = { ...existingData };
@@ -141,38 +141,66 @@ const mockAIParse = async (userInput: string, existingData: ParsedLoadData): Pro
     updatedData.commodity = commodityMatch[1].trim();
   }
 
-  // Determine what's missing and ask questions
-  const missingFields: string[] = [];
-  if (!updatedData.customer) missingFields.push('customer');
-  if (!updatedData.equipmentType) missingFields.push('equipment type');
-  if (!updatedData.pickup?.city) missingFields.push('pickup location');
-  if (!updatedData.delivery?.city) missingFields.push('delivery location');
-  if (!updatedData.weight) missingFields.push('weight');
-  if (!updatedData.miles) missingFields.push('miles');
-  if (!updatedData.commodity) missingFields.push('commodity');
-
+  // Check if we have minimum required info (pickup and delivery locations)
+  const hasMinimumInfo = updatedData.pickup?.city && updatedData.delivery?.city;
+  
   let message = '';
-  if (missingFields.length === 0) {
-    message = `Perfect! I've extracted all the information. Here's what I found:\n\n` +
+  let shouldCreate = false;
+
+  if (hasMinimumInfo) {
+    // Fill in defaults for missing fields
+    if (!updatedData.customer) {
+      updatedData.customer = 'TechLogistics Inc.'; // Default customer
+    }
+    if (!updatedData.equipmentType) {
+      updatedData.equipmentType = 'Dry Van'; // Default equipment
+    }
+    if (!updatedData.weight) {
+      updatedData.weight = 15000; // Default weight
+    }
+    if (!updatedData.miles) {
+      updatedData.miles = 500; // Default miles
+    }
+    if (!updatedData.rate) {
+      updatedData.rate = 2000; // Default rate
+    }
+    if (!updatedData.commodity) {
+      updatedData.commodity = 'General Freight'; // Default commodity
+    }
+    if (!updatedData.pickup.state) {
+      updatedData.pickup.state = 'CA'; // Default state
+    }
+    if (!updatedData.delivery.state) {
+      updatedData.delivery.state = 'CA'; // Default state
+    }
+
+    message = `Great! I've extracted the information and filled in defaults for missing details:\n\n` +
       `• Customer: ${updatedData.customer}\n` +
       `• Equipment: ${updatedData.equipmentType}\n` +
-      `• Pickup: ${updatedData.pickup.city}${updatedData.pickup.state ? ', ' + updatedData.pickup.state : ''}\n` +
-      `• Delivery: ${updatedData.delivery.city}${updatedData.delivery.state ? ', ' + updatedData.delivery.state : ''}\n` +
-      `• Weight: ${updatedData.weight?.toLocaleString()} lbs\n` +
-      `• Miles: ${updatedData.miles?.toLocaleString()}\n` +
-      `• Rate: $${updatedData.rate?.toLocaleString()}\n` +
+      `• Pickup: ${updatedData.pickup.city}, ${updatedData.pickup.state}\n` +
+      `• Delivery: ${updatedData.delivery.city}, ${updatedData.delivery.state}\n` +
+      `• Weight: ${updatedData.weight.toLocaleString()} lbs\n` +
+      `• Miles: ${updatedData.miles.toLocaleString()}\n` +
+      `• Rate: $${updatedData.rate.toLocaleString()}\n` +
       `• Commodity: ${updatedData.commodity}\n\n` +
-      `Would you like me to create this load? Type "yes" or "confirm" to proceed.`;
-  } else if (missingFields.length === 1) {
-    message = `I need one more piece of information: ${missingFields[0]}. Can you provide that?`;
+      `Creating your load now...`;
+    
+    shouldCreate = true;
   } else {
-    message = `I still need a few more details: ${missingFields.slice(0, -1).join(', ')}, and ${missingFields[missingFields.length - 1]}. Can you provide these?`;
+    // Still need pickup and delivery
+    const missing = [];
+    if (!updatedData.pickup?.city) missing.push('pickup location');
+    if (!updatedData.delivery?.city) missing.push('delivery location');
+    
+    message = `I need the ${missing.join(' and ')} to create the load. Please provide:\n` +
+      `- Pickup location (e.g., "from Los Angeles, CA")\n` +
+      `- Delivery location (e.g., "to San Francisco, CA")`;
   }
 
   return {
     message,
     data: updatedData,
-    isComplete: missingFields.length === 0
+    shouldCreate
   };
 };
 
@@ -181,7 +209,7 @@ export default function AILoadCreator({ isOpen, onClose = () => {}, onLoadCreate
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m your AI load creation assistant. I can help you create loads using natural language. Just tell me about the load you want to create, and I\'ll extract the information and ask for any missing details.\n\nFor example, you could say: "Create a load for TechLogistics from Los Angeles, CA to San Francisco, CA using a Dry Van, weight 15000 lbs, 380 miles, rate $2850, commodity Electronics"',
+      content: 'Hello! I\'m your AI load creation assistant. I can help you create loads using natural language. Just tell me about the load you want to create, and I\'ll automatically create it with smart defaults for any missing information.\n\nFor example, you could say: "Create a load from Los Angeles, CA to San Francisco, CA" or "I need a load from Dallas to Austin"',
       timestamp: new Date()
     }
   ]);
@@ -227,31 +255,23 @@ export default function AILoadCreator({ isOpen, onClose = () => {}, onLoadCreate
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isProcessing) return;
+    if (!input.trim() || isProcessing || isCreating) return;
 
     const userInput = input.trim();
     setInput('');
     addMessage('user', userInput);
-
-    // Check if user is confirming (only if we have all required data)
-    const hasAllData = parsedData.customer && 
-                      parsedData.equipmentType && 
-                      parsedData.pickup?.city && 
-                      parsedData.delivery?.city &&
-                      parsedData.weight &&
-                      parsedData.miles &&
-                      parsedData.commodity;
-    
-    if (hasAllData && userInput.toLowerCase().match(/^(yes|confirm|create|proceed|go ahead)$/i)) {
-      await createLoad();
-      return;
-    }
 
     setIsProcessing(true);
     try {
       const result = await mockAIParse(userInput, parsedData);
       setParsedData(result.data);
       addMessage('assistant', result.message);
+      
+      // Auto-create if we have minimum info
+      if (result.shouldCreate) {
+        setIsProcessing(false);
+        await createLoad();
+      }
     } catch (error) {
       addMessage('assistant', 'I apologize, but I encountered an error processing your request. Could you please try rephrasing it?');
     } finally {
@@ -261,17 +281,21 @@ export default function AILoadCreator({ isOpen, onClose = () => {}, onLoadCreate
 
   const createLoad = async () => {
     setIsCreating(true);
-    addMessage('assistant', 'Creating your load now...');
 
     try {
-      // Find customer by name
-      const customer = customers.find(c => 
+      // Find customer by name, or use first customer as default
+      let customer = customers.find(c => 
         c.company_name.toLowerCase().includes(parsedData.customer?.toLowerCase() || '') ||
         parsedData.customer?.toLowerCase().includes(c.company_name.toLowerCase() || '')
       );
 
+      // If customer not found, use first customer as default
+      if (!customer && customers.length > 0) {
+        customer = customers[0];
+      }
+
       if (!customer) {
-        addMessage('assistant', `I couldn't find a customer matching "${parsedData.customer}". Please select a customer from the list or provide a valid customer name.`);
+        addMessage('assistant', `❌ No customers available. Please add customers first.`);
         setIsCreating(false);
         return;
       }
@@ -334,10 +358,22 @@ export default function AILoadCreator({ isOpen, onClose = () => {}, onLoadCreate
       const data = await response.json();
 
       if (data.success) {
-        addMessage('assistant', `✅ Load created successfully! Order ID: ${data.data.orderId}\n\nThe load has been added to your system. You can view it in the loads list.`);
+        addMessage('assistant', `✅ Load created successfully! Order ID: ${data.data.orderId}\n\nThe load has been added to your system. Resetting chat...`);
+        
+        // Reset chat after a short delay
         setTimeout(() => {
+          // Reset state
+          setMessages([
+            {
+              id: '1',
+              role: 'assistant',
+              content: 'Hello! I\'m your AI load creation assistant. I can help you create loads using natural language. Just tell me about the load you want to create, and I\'ll extract the information and create it automatically.\n\nFor example, you could say: "Create a load from Los Angeles, CA to San Francisco, CA"',
+              timestamp: new Date()
+            }
+          ]);
+          setParsedData({});
+          setIsCreating(false);
           onLoadCreated();
-          onClose();
         }, 2000);
       } else {
         addMessage('assistant', `❌ Error creating load: ${data.message}. Please try again or use the manual form.`);
